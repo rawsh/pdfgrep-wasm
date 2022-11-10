@@ -223,6 +223,10 @@ RUN wget https://pdfgrep.org/download/pdfgrep-2.1.2.tar.gz && \
     rm pdfgrep-2.1.2.tar.gz && \
     mv pdfgrep-2.1.2 pdfgrep
 
+
+# build html file with emscripten
+RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.html\$(EXEEXT)|g" pdfgrep/src/Makefile.in
+
 # build pdfgrep
 RUN cd pdfgrep && \
     poppler_cpp_LIBS="-lpoppler -lpoppler-cpp -ljpeg -lopenjp2 -lfreetype -lz" \
