@@ -1,0 +1,16 @@
+
+# # download nss
+# RUN mkdir nss
+# RUN wget https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_84_RTM/src/nss-3.84-with-nspr-4.35.tar.gz
+# RUN tar -xzf nss-3.84-with-nspr-4.35.tar.gz -C nss --strip-components=1
+# RUN rm nss-3.84-with-nspr-4.35.tar.gz
+# # installl gyp-next
+# RUN python3 -m pip install gyp-next
+
+# build nss
+# CPPFLAGS="-I$EMSCRIPTEN_PATH/include"
+# LDFLAGS="-L$EMSCRIPTEN_PATH/lib"
+# RUN cd nss && \
+#     emconfigure ./nss/build.sh --gcc --static --opt --disable-tests 
+# RUN cd nss && \
+#     emmake make -C nss nss_build_all USE_64=1 BUILD_OPT=1 USE_SYSTEM_ZLIB=1 ZLIB_LIBS=-lz NSS_ENABLE_WERROR=0 ZLIB_LIBS=/emsdk/upstream/emscripten/cache/sysroot/include/zlib.h
