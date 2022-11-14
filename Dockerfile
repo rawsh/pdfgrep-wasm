@@ -197,6 +197,23 @@ RUN cd libgcrypt && \
 #     emmake make -j && \
 #     emmake make install
 
+# download boost
+# RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz && \
+#     tar -xzf boost_1_76_0.tar.gz && \
+#     rm boost_1_76_0.tar.gz && \
+#     mv boost_1_76_0 boost
+
+# # patch boost with emscripten patches
+# COPY patches/boost.patch boost/
+# RUN cd boost && \
+#     patch -p0 < boost.patch
+
+# # # # build boost
+# RUN cd boost && \
+#     ./bootstrap.sh --prefix=${EMSCRIPTEN_PATH}
+# RUN cd boost && \
+#     ./b2 variant=release toolset=emscripten 
+    
 # build poppler
 # had to build without fontconfig to get it to work
 # -DFONT_CONFIGURATION=generic
@@ -207,9 +224,10 @@ RUN cd libgcrypt && \
 RUN cd poppler && \
     mkdir build && \
     cd build && \
-    emcmake cmake -DFONT_CONFIGURATION=generic -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_BOOST=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DTESTDATADIR=/src/test -DCMAKE_INSTALL_PREFIX:PATH=${EMSCRIPTEN_PATH} .. ; exit 0
+    emcmake cmake -DFONT_CONFIGURATION=generic -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_BOOST=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DTESTDATADIR=/src/test -DCMAKE_INSTALL_PREFIX:PATH=${EMSCRIPTEN_PATH} ..
 
 RUN cd poppler/build && \
+    LIBS="-s USE_BOOST_HEADERS=1" \
     emcmake cmake -DFONT_CONFIGURATION=generic -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_BOOST=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DTESTDATADIR=$PWD/testfiles -DCMAKE_INSTALL_PREFIX:PATH=${EMSCRIPTEN_PATH} .. && \
     emmake make -j && \
     emmake make install
@@ -230,7 +248,7 @@ RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.js\$(EXEEXT)|g" pdfgrep/src/Makefile.in
 
 # build pdfgrep
 RUN cd pdfgrep && \
-    LIBS="-sASSERTIONS -s INVOKE_RUN=0 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ENV\"]'" \
+    LIBS="-sASSERTIONS -sALLOW_MEMORY_GROWTH -s INVOKE_RUN=0 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ENV\"]'" \
     poppler_cpp_LIBS="-lpoppler -lpoppler-cpp -ljpeg -lopenjp2 -lfreetype -lz" \
     emconfigure ./configure --without-libpcre --bindir=/src/target --prefix=${EMSCRIPTEN_PATH} && \
     emmake make -j && \
