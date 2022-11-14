@@ -12,10 +12,10 @@ jobs:
     - name: Build docker images
       run: docker build -t pdfgrep-wasm .
     - uses: shrink/actions-docker-extract@v1
-        id: extract
-        with:
-          image: pdfgrep-wasm
-          path: /target/.
+      id: extract
+      with:
+        image: pdfgrep-wasm
+        path: /target/.
     - name: Upload Dist
         uses: actions/upload-artifact@v2
         with:
