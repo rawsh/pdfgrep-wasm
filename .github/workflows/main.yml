@@ -10,4 +10,14 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
     - name: Build docker images
-      run: docker-compose build
+      run: docker build -t pdfgrep-wasm .
+    - uses: shrink/actions-docker-extract@v1
+        id: extract
+        with:
+          image: pdfgrep-wasm
+          path: /target/.
+    - name: Upload Dist
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ steps.extract.outputs.destination }}
+          name: dist
