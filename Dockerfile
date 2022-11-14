@@ -225,13 +225,17 @@ RUN wget https://pdfgrep.org/download/pdfgrep-2.1.2.tar.gz && \
 
 
 # build html file with emscripten
-RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.html\$(EXEEXT)|g" pdfgrep/src/Makefile.in
+# RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.html\$(EXEEXT)|g" pdfgrep/src/Makefile.in
+RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.js\$(EXEEXT)|g" pdfgrep/src/Makefile.in
 
 # build pdfgrep
 RUN cd pdfgrep && \
+    LIBS="-sASSERTIONS -s INVOKE_RUN=0 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ENV\"]'" \
     poppler_cpp_LIBS="-lpoppler -lpoppler-cpp -ljpeg -lopenjp2 -lfreetype -lz" \
-    emconfigure ./configure --without-libpcre --prefix=${EMSCRIPTEN_PATH} --bindir=/src/target && \
+    emconfigure ./configure --without-libpcre --bindir=/src/target --prefix=${EMSCRIPTEN_PATH} && \
     emmake make -j && \
     emmake make install
 
-RUN cp /src/pdfgrep/a.wasm /src/target/pdfgrep.wasm
+RUN cp pdfgrep/src/pdfgrep.wasm target
+# RUN cp pdfgrep/src/pdfgrep.js target
+# RUN cp pdfgrep/src/pdfgrep.html target
