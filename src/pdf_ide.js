@@ -37,8 +37,7 @@ function search_uploads() {
     // search for query in memfs
     // NOCLEANUP_callMain(["-iHn", query, ...files]);
     // let args = getArgs(["-iHn", query, ...files]);
-    FS.chdir('/tmp');
-    callMain(["-iHn", query, ...files]);
+    callMain(["-iHn", "--cache", query, ...files]);
 
     // restore memory
     HEAPU8.fill(0);

@@ -15,7 +15,7 @@ jobs:
       id: extract
       with:
         image: pdfgrep-wasm
-        path: /target/.
+        path: /src/target/.
     - name: Upload Dist
       uses: actions/upload-artifact@v2
       with:
