@@ -203,7 +203,7 @@ RUN cd libgcrypt && \
 #     rm boost_1_76_0.tar.gz && \
 #     mv boost_1_76_0 boost
 
-# # patch boost with emscripten patches
+# patch boost with emscripten patches
 # COPY patches/boost.patch boost/
 # RUN cd boost && \
 #     patch -p0 < boost.patch
@@ -224,7 +224,7 @@ RUN cd libgcrypt && \
 RUN cd poppler && \
     mkdir build && \
     cd build && \
-    emcmake cmake -DFONT_CONFIGURATION=generic -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_BOOST=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DTESTDATADIR=/src/test -DCMAKE_INSTALL_PREFIX:PATH=${EMSCRIPTEN_PATH} ..
+    emcmake cmake -DFONT_CONFIGURATION=generic -DCMAKE_BUILD_TYPE=RELEASE -DENABLE_BOOST=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DTESTDATADIR=/src/test -DCMAKE_INSTALL_PREFIX:PATH=${EMSCRIPTEN_PATH} ..; exit 0
 
 RUN cd poppler/build && \
     LIBS="-s USE_BOOST_HEADERS=1" \
@@ -246,14 +246,28 @@ RUN wget https://pdfgrep.org/download/pdfgrep-2.1.2.tar.gz && \
 # RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.html\$(EXEEXT)|g" pdfgrep/src/Makefile.in
 RUN sed -ie "s|pdfgrep\$(EXEEXT)|pdfgrep.js\$(EXEEXT)|g" pdfgrep/src/Makefile.in
 
-# build pdfgrep
+# -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ENV\"]'
+# -s EXPORTED_RUNTIME_METHODS='[\"FS\"]'
+# -s EXPORTED_FUNCTIONS='["_main", "_flush_streams"]'
+# -s BUILD_AS_WORKER=1
+# -s STANDALONE_WASM
+
+# compile standalone pdfgrep
 RUN cd pdfgrep && \
-    LIBS="-sASSERTIONS -sALLOW_MEMORY_GROWTH -s INVOKE_RUN=0 -s EXIT_RUNTIME=0 -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ENV\"]'" \
+    LIBS="-sSTANDALONE_WASM -sASSERTIONS -sALLOW_MEMORY_GROWTH -sINVOKE_RUN=0 -sEXPORTED_RUNTIME_METHODS='[\"FS\",\"callMain\"]'" \
     poppler_cpp_LIBS="-lpoppler -lpoppler-cpp -ljpeg -lopenjp2 -lfreetype -lz" \
-    emconfigure ./configure --without-libpcre --bindir=/src/target --prefix=${EMSCRIPTEN_PATH} && \
+    emconfigure ./configure --target=wasm32-wasi --without-libpcre --bindir=/src/target --prefix=${EMSCRIPTEN_PATH} && \
     emmake make -j && \
     emmake make install
 
-RUN cp pdfgrep/src/pdfgrep.wasm target
+# build pdfgrep
+# RUN cd pdfgrep && \
+#     LIBS="-sASSERTIONS -sALLOW_MEMORY_GROWTH -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 -sEXPORTED_RUNTIME_METHODS='[\"FS\",\"callMain\"]'" \
+#     poppler_cpp_LIBS="-lpoppler -lpoppler-cpp -ljpeg -lopenjp2 -lfreetype -lz" \
+#     emconfigure ./configure --without-libpcre --bindir=/src/target --prefix=${EMSCRIPTEN_PATH} && \
+#     emmake make -j && \
+#     emmake make install
+
+# RUN cp pdfgrep/src/pdfgrep.wasm target
 # RUN cp pdfgrep/src/pdfgrep.js target
 # RUN cp pdfgrep/src/pdfgrep.html target

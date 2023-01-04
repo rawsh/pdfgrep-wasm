@@ -17,4 +17,4 @@
  
  type.set-generated-target-suffix EXE : <toolset>emscripten : "js" ;
  type.set-generated-target-suffix OBJ : <toolset>emscripten : "bc" ;
- 
+@@ -59,6 +62,7 @@
